@@ -1,0 +1,10 @@
+blockchains:
+  agent_job:
+    module: main
+compile:
+  rellVersion: 0.13.14
+database:
+  schema: schema_agent_job
+test:
+  modules:
+    - test

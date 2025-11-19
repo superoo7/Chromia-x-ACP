@@ -1,0 +1,72 @@
+module;
+
+object counter {
+    mutable id: integer = 0;
+}
+
+enum job_status {
+    PENDING,
+    COMPLETED,
+    REJECTED
+}
+
+entity job {
+    key id: integer;
+    job_id: text;
+    created_at: timestamp = op_context.last_block_time;
+    result: json;
+    evm_address: text;
+    mutable status: job_status = job_status.PENDING;
+}
+
+function get_id(): integer {
+    counter.id = counter.id + 1;
+    return counter.id;
+}
+
+operation create_job(job_id: text, evm_address: text, result: json) {
+    val id = get_id();
+    create job (
+        id = id,
+        job_id = job_id,
+        evm_address = evm_address,
+        result = result
+    );
+}
+
+operation update_job_status(job_id: text, status: job_status) {
+    update job @ {
+        .job_id == job_id
+    } (
+        .status = status
+    );
+}
+
+query get_job(job_id: text) {
+    return job @ {
+        .job_id == job_id
+    } (
+        .id,
+        .job_id,
+        .created_at,
+        .result,
+        .evm_address,
+        .status
+    );
+}
+
+query get_all_jobs() {
+    return job @* {} (
+        .id,
+        .job_id,
+        .created_at,
+        .result,
+        .evm_address,
+        .status
+    );
+}
+
+query total_jobs(): integer {
+    val total = job @ { } ( @sum 1 );
+    return total;
+}
